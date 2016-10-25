@@ -1,17 +1,140 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <cstdlib>
+#include <algorithm>
 
 class solution {
   public:
     int strongPasswordChecker(const std::string & s) {
+        int result;
         if (lengthChecker(s) && caseChecker(s) && repeatingCharsChecker(s))
-            return 0;
+            result = 0;
         else {
+            std::vector<int> cands;
+            std::vector<std::string> next;
+            if (s.size() < 6) {
+                auto temp = insert(s);
+                // for (auto tmp : temp)
+                //     next.push_back(tmp);
+                next.push_back(temp);
+            }
+            else if (s.size() > 20) {
+                auto temp = del(s);
+                // for (auto tmp : temp)
+                //     next.push_back(tmp);
+                next.push_back(temp);
+            }
+            else if (!upperCase(s)) {
+                auto temp = replace(s, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                // for (auto tmp : temp)
+                //     next.push_back(tmp);
+                next.push_back(temp);
+            }
+            else if (!lowerCase(s)) {
+                auto temp = replace(s, "abcdefghijklmnopqrstuvwxyz");
+                // for (auto tmp : temp)
+                //     next.push_back(tmp);
+                next.push_back(temp);
+            }
+            else if (!digit(s)) {
+                auto temp = replace(s, "0123456789");
+                // for (auto tmp : temp)
+                //     next.push_back(tmp);
+                next.push_back(temp);
+            }
+            else if (!repeatingCharsChecker(s)) {
+                auto temp = replace(s);
+                // for (auto tmp : temp)
+                //     next.push_back(tmp);
+                next.push_back(temp);
+            }
             
+            for (auto nx : next) {
+                std::cout << nx << std::endl;
+                cands.push_back(1+strongPasswordChecker(nx));
+            }
+            result = *std::min_element(cands.begin(), cands.end());
         }
+        return result;
     }
 
   private:
+    std::string insert(const std::string & s, const std::string & chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") {
+        std::vector<std::string> result;
+        for (size_t i = 0; i <= s.size(); i++) {
+            std::string temp = s;
+            if (i == 0) {
+                char ch = chars[rand()%chars.size()];
+                while (ch == s[i+1])
+                    ch = chars[rand()%chars.size()];
+                temp.insert(temp.begin()+i, ch);
+            }
+            else if (i == s.size()) {
+                char ch = chars[rand()%chars.size()];
+                while (ch == s[i-1])
+                    ch = chars[rand()%chars.size()];
+                temp.insert(temp.begin()+i, ch);
+            }
+            else {
+                char ch = chars[rand()%chars.size()];
+                while (ch == s[i-1] && ch == s[i+1])
+                    ch = chars[rand()%chars.size()];
+                temp.insert(temp.begin()+i, ch);
+            }
+            result.push_back(temp);
+        }
+        return result.back();
+    }
+
+    std::string del(const std::string & s) {
+        std::vector<std::string> result;
+        for (size_t i = 0; i < s.size(); ++i) {
+            std::string temp = s;
+            temp.erase(temp.begin()+i);
+            result.push_back(temp);
+        }
+        return result.front();
+    }
+
+    std::string replace(const std::string & s, const std::string & chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") {
+        // std::vector<std::string> result;
+        // for (size_t i = 0; i < s.size(); i++) {
+        //     std::string temp = s;
+        //     if (i == 0) {
+        //         char ch = chars[rand()%chars.size()];
+        //         while (ch == s[i+1])
+        //             ch = chars[rand()%chars.size()];
+        //         temp.replace(i,1,1,ch);
+        //     }
+        //     else if (i == s.size()) {
+        //         char ch = chars[rand()%chars.size()];
+        //         while (ch == s[i-1])
+        //             ch = chars[rand()%chars.size()];
+        //         temp.replace(i,1,1,ch);
+        //     }
+        //     else {
+        //         char ch = chars[rand()%chars.size()];
+        //         while (ch == s[i-1] && ch == s[i+1])
+        //             ch = chars[rand()%chars.size()];
+        //         temp.replace(i,1,1,ch);
+        //     }
+        //     result.push_back(temp);
+        // }
+        // return result.front();
+
+        size_t idx;
+        for (idx = 1; idx < s.size()-1; idx++)
+            if (s[idx-1]==s[idx] && s[idx]==s[idx+1])
+                break;
+        std::string temp = s;
+        char ch = chars[rand()%chars.size()];
+        while (ch == s[idx-1] && ch == s[idx+1])
+            ch = chars[rand()%chars.size()];
+        temp.replace(idx,1,1,ch);
+        return temp;
+    }
+    
     bool lengthChecker(const std::string & s) {
         return s.size() >= 6 && s.size() <= 20;
     }
@@ -23,6 +146,18 @@ class solution {
         return lowerCase && upperCase && digit;
     }
 
+    bool upperCase(const std::string & s) {
+        return s.find_first_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ") != std::string::npos;
+    }
+
+    bool lowerCase(const std::string & s) {
+        return s.find_first_of("abcdefghijklmnopqrstuvwxyz") != std::string::npos;
+    }
+
+    bool digit(const std::string & s) {
+        return s.find_first_of("0123456789") != std::string::npos;
+    }
+
     bool repeatingCharsChecker(const std::string & s) {
         for (size_t i = 1; i < s.size()-1; ++i)
             if (s[i]==s[i-1] && s[i]==s[i+1])
@@ -30,3 +165,14 @@ class solution {
         return true;
     }
 };
+
+int main() {
+    // std::string pw{"abcsw"};
+    // std::string pw{"aaabccc"};
+    std::string pw{"a"};
+    
+    solution soln;
+    int diff = soln.strongPasswordChecker(pw);
+    std::cout << "The minimum number of edits is:\n"
+              << diff << std::endl;
+}
